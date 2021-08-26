@@ -1,0 +1,23 @@
+sudo: required
+language: generic
+services:
+  - docker 
+before_install: 
+  - docker build -t mesghali/react-test -f ./client/Dockerfile.dev ./client
+script:
+  - docker run -e CI=true USERNAME/react-test npm test
+
+after_success:
+  - docker build -t mesghali/multi-client ./client
+  - docker build -t mesghali/multi-nginx ./nginx
+  - docker build -t mesghali/multi-server ./server
+  - docker build -t mesghali/multi-worker ./worker
+
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+  - docker push mesghali/multi-client 
+  - docker push mesghali/multi-nginx 
+  - docker push mesghali/multi-server 
+  - docker push mesghali/multi-worker
+
+
